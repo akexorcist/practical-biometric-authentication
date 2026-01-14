@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "dev.akexorcist.biometric.pratical.compose"
-        minSdk = 28
+        minSdk = 23
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -30,6 +30,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+        isCoreLibraryDesugaringEnabled = true
     }
     buildFeatures {
         compose = true
@@ -43,8 +44,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":crypto"))
-    implementation(project(":data"))
+    implementation(project(":shared"))
     implementation(libs.androidx.core)
     implementation(libs.lifecycle.runtime)
     implementation(libs.activity.compose)
@@ -66,4 +66,5 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit4)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
+    coreLibraryDesugaring(libs.desugar)
 }

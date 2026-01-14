@@ -1,93 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="32dp"
+    android:padding="24dp"
     tools:context=".AuthActivity">
 
     <LinearLayout
-        android:id="@+id/card_token"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_card"
-        android:orientation="vertical"
-        android:padding="24dp"
-        app:layout_constraintBottom_toTopOf="@+id/button_randomize_token"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.4"
-        app:layout_constraintVertical_chainStyle="packed">
+        android:layout_gravity="center"
+        android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Token to encrypt"
-            android:textColor="#607D8B"
-            android:textSize="16sp" />
+            android:background="@drawable/shape_bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/text_view_token"
-            android:layout_width="wrap_content"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Token to encrypt"
+                android:textColor="@color/onPrimaryContainer"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/textViewToken"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="12345-12345-12345-12345"
+                android:textColor="@color/onPrimaryContainer"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/buttonRandomizeToken"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Randomize Token"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/buttonEnableBiometric"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="12345-12345-12345-12345"
-            android:textColor="@android:color/black"
-            android:textSize="20sp" />
+            android:text="Enable Biometric"
+            android:textAllCaps="false" />
+
     </LinearLayout>
 
-    <Button
-        android:id="@+id/button_randomize_token"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="24dp"
-        android:text="Randomize Token"
-        android:textAllCaps="false"
-        app:layout_constraintBottom_toTopOf="@+id/button_enable_biometric"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/card_token" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/button_enable_biometric"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:text="Enable Biometric"
-        android:textAllCaps="false"
-        app:layout_constraintBottom_toTopOf="@id/button_authenticate"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_randomize_token" />
+        <Button
+            android:id="@+id/buttonAuthenticate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:enabled="false"
+            android:text="Authenticate"
+            android:textAllCaps="false" />
 
-    <Button
-        android:id="@+id/button_authenticate"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="48dp"
-        android:enabled="false"
-        android:text="Authenticate"
-        android:textAllCaps="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_enable_biometric" />
-
-    <Button
-        android:id="@+id/button_disable_biometric"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:enabled="false"
-        android:text="Disable Biometric"
-        android:textAllCaps="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_authenticate"
-        app:layout_constraintVertical_bias="0"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:id="@+id/buttonDisableBiometric"
+            android:layout_width="match_parent"
+            style="@style/Widget.Material3.Button.Error"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="32dp"
+            android:enabled="true"
+            android:text="Disable Biometric"
+            android:textAllCaps="false" />
+    </LinearLayout>
+</FrameLayout>

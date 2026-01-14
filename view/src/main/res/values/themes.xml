@@ -1,9 +1,16 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Practicalbiometricauthentication" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Base.Thme.Practicalbiometricauthentication" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:colorPrimary">@color/primary</item>
+        <item name="android:colorSecondary">@color/secondary</item>
     </style>
-
-    <style name="Theme.Practicalbiometricauthentication" parent="Base.Theme.Practicalbiometricauthentication" />
+    <style name="Theme.Practicalbiometricauthentication" parent="Base.Thme.Practicalbiometricauthentication">
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <style name="Widget.Material3.Button.Error" parent="Widget.Material3.Button.UnelevatedButton">
+        <item name="backgroundTint">@color/selector_button_container_error</item>
+        <item name="android:textColor">@color/selector_button_content_error</item>
+        <item name="iconTint">@color/selector_button_content_error</item>
+<!--        <item name="rippleColor">@color/your_ripple_color</item>-->
+    </style>
 </resources>

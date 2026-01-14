@@ -1,9 +1,9 @@
-package dev.akexorcist.biometric.pratical.compose.ui.auth
+package dev.akexorcist.biometric.pratical.shared.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.akexorcist.biometric.pratical.crypto.CryptographyManager
-import dev.akexorcist.biometric.pratical.data.AuthenticationDataRepository
+import dev.akexorcist.biometric.pratical.shared.crypto.CryptographyManager
+import dev.akexorcist.biometric.pratical.shared.data.AuthenticationDataRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -48,10 +48,9 @@ class AuthViewModel(
         }
     }
 
-    fun onDisableBiometricClick(cryptographyManager: CryptographyManager) {
+    fun onDisableBiometricClick() {
         viewModelScope.launch {
             authenticationDataRepository.clearEncryptedAuthData()
-            runCatching { cryptographyManager.deleteInvalidKey() }
             _uiState.update {
                 val newToken = UUID.randomUUID().toString()
                 AuthUiState.Initial(token = newToken)

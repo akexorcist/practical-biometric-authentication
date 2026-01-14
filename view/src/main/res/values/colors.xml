@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="primary">#FF6750A4</color>
+    <color name="onPrimaryContainer">#FF21005D</color>
+    <color name="secondary">#FFCCC2DC</color>
+    <color name="secondaryContainer">#FFE8DEF8</color>
+    <color name="tertiary">#FF7D5260</color>
+    <color name="error">#FFB3261E</color>
+    <color name="onError">#FFFFFFFF</color>
 </resources>

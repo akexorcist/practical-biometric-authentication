@@ -1,8 +1,11 @@
 package dev.akexorcist.biometric.pratical.compose.ui.auth
 
+import android.content.Context
+import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.util.Base64
 import androidx.biometric.AuthenticationRequest
 import androidx.biometric.AuthenticationResult
+import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.compose.rememberAuthenticationLauncher
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +25,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,15 +34,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import dev.akexorcist.biometric.pratical.crypto.CryptographyManager
+import dev.akexorcist.biometric.pratical.shared.crypto.CryptographyManager
 import dev.akexorcist.biometric.pratical.compose.ui.navigation.AppScreen
 import dev.akexorcist.biometric.pratical.compose.ui.theme.PracticalBiometricAuthenticationTheme
+import dev.akexorcist.biometric.pratical.shared.viewmodel.AuthUiState
+import dev.akexorcist.biometric.pratical.shared.viewmodel.AuthViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import javax.crypto.Cipher
 
 @Composable
 fun AuthRoute(
@@ -46,6 +55,7 @@ fun AuthRoute(
     cryptographyManager: CryptographyManager,
     viewModel: AuthViewModel,
 ) {
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -85,7 +95,6 @@ fun AuthRoute(
         }
     }
 
-
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = Modifier.fillMaxSize()
@@ -94,38 +103,71 @@ fun AuthRoute(
             modifier = Modifier.padding(innerPadding),
             uiState = uiState,
             onEnableBiometricClick = {
-                val cryptoObject = cryptographyManager.getCryptoObjectForEncryption()
-                authenticationLauncher.launch(
-                    AuthenticationRequest.biometricRequest(
-                        title = "Enable Biometric Authentication",
-                        authFallback = AuthenticationRequest.Biometric.Fallback.NegativeButton(negativeButtonText = "Cancel"),
-                        init = {
-                            setSubtitle("Confirm to enable biometric authentication")
-                            setIsConfirmationRequired(true)
-                            setMinStrength(AuthenticationRequest.Biometric.Strength.Class3(cryptoObject = cryptoObject))
-                        },
-                    )
+                val canAuthenticate = context.checkBiometricAvailability(
+                    scope = scope,
+                    snackbarHostState = snackbarHostState,
                 )
+                if (canAuthenticate) {
+                    val cipher = handleCipherResult(
+                        scope = scope,
+                        snackbarHostState = snackbarHostState,
+                        onInvalidKey = {
+                            runCatching { cryptographyManager.deleteInvalidKey() }
+                            viewModel.onDisableBiometricClick()
+                        },
+                    ) {
+                        cryptographyManager.getCipherForEncryption()
+                    } ?: return@AuthScreen
+                    val cryptoObject = BiometricPrompt.CryptoObject(cipher)
+                    authenticationLauncher.launch(
+                        AuthenticationRequest.biometricRequest(
+                            title = "Enable Biometric Authentication",
+                            authFallback = AuthenticationRequest.Biometric.Fallback.NegativeButton(negativeButtonText = "Cancel"),
+                            init = {
+                                setSubtitle("Confirm to enable biometric authentication")
+                                setIsConfirmationRequired(true)
+                                setMinStrength(AuthenticationRequest.Biometric.Strength.Class3(cryptoObject))
+                            },
+                        )
+                    )
+                }
             },
             onDisableBiometricClick = {
-                viewModel.onDisableBiometricClick(cryptographyManager)
+                runCatching { cryptographyManager.deleteInvalidKey() }
+                viewModel.onDisableBiometricClick()
             },
             onAuthenticateClick = {
                 val uiState = uiState
                 if (uiState is AuthUiState.BiometricEnabled) {
-                    val iv = Base64.decode(uiState.encryptedData.iv, Base64.NO_WRAP)
-                    val cryptoObject = cryptographyManager.getCryptoObjectForDecryption(iv)
-                    authenticationLauncher.launch(
-                        AuthenticationRequest.biometricRequest(
-                            title = "Authenticate",
-                            authFallback = AuthenticationRequest.Biometric.Fallback.NegativeButton(negativeButtonText = "Cancel"),
-                            init = {
-                                setSubtitle("Authenticate to log in")
-                                setIsConfirmationRequired(true)
-                                setMinStrength(AuthenticationRequest.Biometric.Strength.Class3(cryptoObject = cryptoObject))
-                            },
-                        )
+                    val canAuthenticate = context.checkBiometricAvailability(
+                        scope = scope,
+                        snackbarHostState = snackbarHostState,
                     )
+                    if (canAuthenticate) {
+                        val iv = Base64.decode(uiState.encryptedData.iv, Base64.NO_WRAP)
+                        val cipher = handleCipherResult(
+                            scope = scope,
+                            snackbarHostState = snackbarHostState,
+                            onInvalidKey = {
+                                runCatching { cryptographyManager.deleteInvalidKey() }
+                                viewModel.onDisableBiometricClick()
+                            },
+                        ) {
+                            cryptographyManager.getCipherForDecryption(iv)
+                        } ?: return@AuthScreen
+                        val cryptoObject = BiometricPrompt.CryptoObject(cipher)
+                        authenticationLauncher.launch(
+                            AuthenticationRequest.biometricRequest(
+                                title = "Authenticate",
+                                authFallback = AuthenticationRequest.Biometric.Fallback.NegativeButton(negativeButtonText = "Cancel"),
+                                init = {
+                                    setSubtitle("Authenticate to log in")
+                                    setIsConfirmationRequired(true)
+                                    setMinStrength(AuthenticationRequest.Biometric.Strength.Class3(cryptoObject))
+                                },
+                            )
+                        )
+                    }
                 }
             },
             onRandomizeTokenClick = {
@@ -184,6 +226,9 @@ fun AuthScreen(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onRandomizeTokenClick,
                     enabled = !isBiometricEnabled,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary,
+                    )
                 ) {
                     Text(text = "Randomize Token")
                 }
@@ -226,6 +271,74 @@ fun AuthScreen(
             }
         }
     }
+}
+
+private fun handleCipherResult(
+    scope: CoroutineScope,
+    snackbarHostState: SnackbarHostState,
+    onInvalidKey: () -> Unit,
+    block: () -> Cipher,
+): Cipher? {
+    return try {
+        block()
+    } catch (_: KeyPermanentlyInvalidatedException) {
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = "Biometric modification detected. Please re-enable the feature.",
+                actionLabel = "Disable",
+            )
+            when (result) {
+                SnackbarResult.ActionPerformed -> {
+                    onInvalidKey()
+                }
+
+                SnackbarResult.Dismissed -> Unit
+            }
+        }
+        null
+    } catch (e: Exception) {
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                message = e.localizedMessage
+                    ?: e.message
+                    ?: "Unknown error"
+            )
+        }
+        null
+    }
+}
+
+private fun Context.checkBiometricAvailability(
+    scope: CoroutineScope,
+    snackbarHostState: SnackbarHostState,
+): Boolean {
+    val result = BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+    when (result) {
+        BiometricManager.BIOMETRIC_SUCCESS ->
+            return true
+
+        BiometricManager.BIOMETRIC_STATUS_UNKNOWN ->
+            scope.launch { snackbarHostState.showSnackbar(message = "Something went wrong with the biometric sensor.") }
+
+        BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED ->
+            scope.launch { snackbarHostState.showSnackbar(message = "Biometric authentication isn't supported on this device.") }
+
+        BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE ->
+            scope.launch { snackbarHostState.showSnackbar(message = "Biometric sensor is currently unavailable.") }
+
+        BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED ->
+            scope.launch { snackbarHostState.showSnackbar(message = "No biometric credentials are enrolled.") }
+
+        BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE ->
+            scope.launch { snackbarHostState.showSnackbar(message = "This device doesn't have a biometric sensor.") }
+
+        BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED ->
+            scope.launch { snackbarHostState.showSnackbar(message = "Security update is required to use this feature.") }
+
+        BiometricManager.BIOMETRIC_ERROR_IDENTITY_CHECK_NOT_ACTIVE ->
+            scope.launch { snackbarHostState.showSnackbar(message = "Identity check is currently inactive.") }
+    }
+    return false
 }
 
 @Preview

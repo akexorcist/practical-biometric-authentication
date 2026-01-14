@@ -24,5 +24,4 @@ dependencyResolutionManagement {
 rootProject.name = "practical-biometric-authentication"
 include(":compose")
 include(":view")
-include(":crypto")
-include(":data")
+include(":shared")

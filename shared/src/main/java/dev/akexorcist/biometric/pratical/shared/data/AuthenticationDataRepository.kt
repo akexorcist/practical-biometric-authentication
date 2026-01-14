@@ -1,4 +1,4 @@
-package dev.akexorcist.biometric.pratical.data
+package dev.akexorcist.biometric.pratical.shared.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore

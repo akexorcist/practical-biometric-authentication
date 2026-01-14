@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "dev.akexorcist.biometric.pratical.data"
+    namespace = "dev.akexorcist.biometric.pratical.shared"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        minSdk = 28
+        minSdk = 23
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -25,6 +25,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+        isCoreLibraryDesugaringEnabled = true
     }
 }
 
@@ -35,5 +36,9 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.androidx.core)
+    implementation(libs.biometric)
     implementation(libs.datastore.preferences)
+    implementation(libs.lifecycle.runtime)
+    coreLibraryDesugaring(libs.desugar)
 }

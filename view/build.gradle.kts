@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "dev.akexorcist.biometric.pratical.view"
-        minSdk = 28
+        minSdk = 23
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -28,6 +28,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+        isCoreLibraryDesugaringEnabled = true
     }
     buildFeatures {
         viewBinding = true
@@ -41,14 +42,15 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":crypto"))
-    implementation(project(":data"))
+    implementation(project(":shared"))
     implementation(libs.androidx.core)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.biometric)
     testImplementation(libs.junit)
     androidTestImplementation(libs.junit.ext)
     androidTestImplementation(libs.espresso.core)
+    coreLibraryDesugaring(libs.desugar)
 }

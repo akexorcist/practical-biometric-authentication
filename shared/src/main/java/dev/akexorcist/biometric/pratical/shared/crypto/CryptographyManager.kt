@@ -1,8 +1,7 @@
-package dev.akexorcist.biometric.pratical.crypto
+package dev.akexorcist.biometric.pratical.shared.crypto
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import androidx.biometric.BiometricPrompt
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -22,18 +21,18 @@ class CryptographyManager {
         load(null)
     }
 
-    fun getCryptoObjectForEncryption(): BiometricPrompt.CryptoObject {
+    fun getCipherForEncryption(): Cipher {
         val secretKey = getOrCreateSecretKey()
         val cipher = getCipher()
         cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-        return BiometricPrompt.CryptoObject(cipher)
+        return cipher
     }
 
-    fun getCryptoObjectForDecryption(iv: ByteArray): BiometricPrompt.CryptoObject {
+    fun getCipherForDecryption(iv: ByteArray): Cipher {
         val secretKey = getOrCreateSecretKey()
         val cipher = getCipher()
         cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_AUTHENTICATION_TAG_LENGTH, iv))
-        return BiometricPrompt.CryptoObject(cipher)
+        return cipher
     }
 
     fun encrypt(data: ByteArray, cipher: Cipher): Pair<ByteArray, ByteArray> {
@@ -57,6 +56,7 @@ class CryptographyManager {
             .setKeySize(KEY_SIZE)
             .setEncryptionPaddings(ENCRYPTION_PADDING)
             .setUserAuthenticationRequired(true)
+            .setInvalidatedByBiometricEnrollment(true)
             .build()
         keyGenerator.init(keyGenParameterSpec)
         return keyGenerator.generateKey()

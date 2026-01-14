@@ -3,13 +3,10 @@ package dev.akexorcist.biometric.pratical.view
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import dev.akexorcist.biometric.pratical.view.databinding.ActivityHomeBinding
 
 class HomeActivity : AppCompatActivity() {
-
     companion object {
         const val EXTRA_TOKEN = "extra_token"
 

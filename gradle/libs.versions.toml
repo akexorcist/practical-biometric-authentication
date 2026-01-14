@@ -32,6 +32,7 @@ serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-jso
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.2.0" }
 biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 biometric-compose = { module = "androidx.biometric:biometric-compose", version.ref = "biometric" }
+desugar = { module = "com.android.tools:desugar_jdk_libs", version = "2.1.5" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
