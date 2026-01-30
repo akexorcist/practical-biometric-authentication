@@ -112,7 +112,7 @@ fun AuthRoute(
                         scope = scope,
                         snackbarHostState = snackbarHostState,
                         onInvalidKey = {
-                            runCatching { cryptographyManager.deleteInvalidKey() }
+                            runCatching { cryptographyManager.deleteKey() }
                             viewModel.onDisableBiometricClick()
                         },
                     ) {
@@ -133,7 +133,7 @@ fun AuthRoute(
                 }
             },
             onDisableBiometricClick = {
-                runCatching { cryptographyManager.deleteInvalidKey() }
+                runCatching { cryptographyManager.deleteKey() }
                 viewModel.onDisableBiometricClick()
             },
             onAuthenticateClick = {
@@ -149,7 +149,7 @@ fun AuthRoute(
                             scope = scope,
                             snackbarHostState = snackbarHostState,
                             onInvalidKey = {
-                                runCatching { cryptographyManager.deleteInvalidKey() }
+                                runCatching { cryptographyManager.deleteKey() }
                                 viewModel.onDisableBiometricClick()
                             },
                         ) {
@@ -158,7 +158,7 @@ fun AuthRoute(
                         val cryptoObject = BiometricPrompt.CryptoObject(cipher)
                         authenticationLauncher.launch(
                             AuthenticationRequest.biometricRequest(
-                                title = "Authenticate",
+                                title = "Biometric Authentication",
                                 authFallback = AuthenticationRequest.Biometric.Fallback.NegativeButton(negativeButtonText = "Cancel"),
                                 init = {
                                     setSubtitle("Authenticate to log in")

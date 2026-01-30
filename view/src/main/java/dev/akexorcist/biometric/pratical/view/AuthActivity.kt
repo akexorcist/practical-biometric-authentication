@@ -47,7 +47,7 @@ class AuthActivity : AppCompatActivity() {
         }
 
         binding.buttonDisableBiometric.setOnClickListener {
-            runCatching { cryptographyManager.deleteInvalidKey() }
+            runCatching { cryptographyManager.deleteKey() }
             viewModel.onDisableBiometricClick()
         }
 
@@ -83,14 +83,14 @@ class AuthActivity : AppCompatActivity() {
         if (canAuthenticate) {
             val cipher = handleCipherResult(
                 onInvalidKey = {
-                    runCatching { cryptographyManager.deleteInvalidKey() }
+                    runCatching { cryptographyManager.deleteKey() }
                     viewModel.onDisableBiometricClick()
                 },
             ) { cryptographyManager.getCipherForEncryption() }
                 ?: return
             val biometricPrompt = createBiometricPrompt(
-                onSuccess = { authenticationResult ->
-                    authenticationResult.cryptoObject?.cipher?.let { cipher ->
+                onSuccess = { result ->
+                    result.cryptoObject?.cipher?.let { cipher ->
                         val encryptedData = cryptographyManager.encrypt(viewModel.uiState.value.token.toByteArray(), cipher)
                         val encryptedToken = Base64.encodeToString(encryptedData.first, Base64.NO_WRAP)
                         val iv = Base64.encodeToString(encryptedData.second, Base64.NO_WRAP)
@@ -101,7 +101,12 @@ class AuthActivity : AppCompatActivity() {
                     }
                 },
             )
-            val promptInfo = createPromptInfo()
+            val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Enable Biometric Authentication")
+                .setSubtitle("Confirm to enable biometric authentication")
+                .setNegativeButtonText("Cancel")
+                .setConfirmationRequired(false)
+                .build()
             biometricPrompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
         }
     }
@@ -112,21 +117,26 @@ class AuthActivity : AppCompatActivity() {
             val iv = Base64.decode(uiState.encryptedData.iv, Base64.NO_WRAP)
             val cipher = handleCipherResult(
                 onInvalidKey = {
-                    runCatching { cryptographyManager.deleteInvalidKey() }
+                    runCatching { cryptographyManager.deleteKey() }
                     viewModel.onDisableBiometricClick()
                 },
             ) { cryptographyManager.getCipherForDecryption(iv) }
                 ?: return
             val biometricPrompt = createBiometricPrompt(
-                onSuccess = { authenticationResult ->
-                    authenticationResult.cryptoObject?.cipher?.let { cipher ->
+                onSuccess = { result ->
+                    result.cryptoObject?.cipher?.let { cipher ->
                         val encryptedToken = Base64.decode(uiState.encryptedData.encryptedToken, Base64.NO_WRAP)
                         val decryptedToken = cryptographyManager.decrypt(encryptedToken, cipher)
                         startActivity(HomeActivity.newIntent(this, String(decryptedToken)))
                     }
                 },
             )
-            val promptInfo = createPromptInfo()
+            val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Biometric Authentication")
+                .setSubtitle("Authenticate to log in")
+                .setNegativeButtonText("Cancel")
+                .setConfirmationRequired(false)
+                .build()
             biometricPrompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
         }
     }
@@ -136,31 +146,20 @@ class AuthActivity : AppCompatActivity() {
     ): BiometricPrompt {
         val executor = ContextCompat.getMainExecutor(this)
         val callback = object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                super.onAuthenticationError(errorCode, errString)
-                Toast.makeText(this@AuthActivity, "Authentication error: $errString", Toast.LENGTH_SHORT).show()
-            }
-
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                super.onAuthenticationSucceeded(result)
                 onSuccess(result)
             }
 
             override fun onAuthenticationFailed() {
-                super.onAuthenticationFailed()
                 Toast.makeText(this@AuthActivity, "Authentication failed", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                Toast.makeText(this@AuthActivity, "Authentication error: $errString", Toast.LENGTH_SHORT).show()
             }
         }
         return BiometricPrompt(this, executor, callback)
     }
-
-    private fun createPromptInfo(): BiometricPrompt.PromptInfo =
-        BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Biometric login for my app")
-            .setSubtitle("Log in using your biometric credential")
-            .setNegativeButtonText("Use account password")
-            .setConfirmationRequired(false)
-            .build()
 
     private fun handleCipherResult(
         onInvalidKey: () -> Unit,

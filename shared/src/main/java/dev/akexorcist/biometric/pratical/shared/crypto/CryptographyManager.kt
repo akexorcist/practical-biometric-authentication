@@ -1,5 +1,6 @@
 package dev.akexorcist.biometric.pratical.shared.crypto
 
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import java.security.KeyStore
@@ -45,6 +46,10 @@ class CryptographyManager {
         return cipher.doFinal(encryptedData)
     }
 
+    fun deleteKey() {
+        keyStore.deleteEntry(KEY_NAME)
+    }
+
     private fun getOrCreateSecretKey(): SecretKey {
         return (keyStore.getKey(KEY_NAME, null) as? SecretKey) ?: generateSecretKey()
     }
@@ -56,14 +61,14 @@ class CryptographyManager {
             .setKeySize(KEY_SIZE)
             .setEncryptionPaddings(ENCRYPTION_PADDING)
             .setUserAuthenticationRequired(true)
-            .setInvalidatedByBiometricEnrollment(true)
+            .apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    setInvalidatedByBiometricEnrollment(true)
+                }
+            }
             .build()
         keyGenerator.init(keyGenParameterSpec)
         return keyGenerator.generateKey()
-    }
-
-    fun deleteInvalidKey() {
-        keyStore.deleteEntry(KEY_NAME)
     }
 
     private fun getCipher(): Cipher {
