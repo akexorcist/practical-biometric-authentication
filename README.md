@@ -2,6 +2,8 @@
 
 Example code for implementing the Biometrics API on Android correctly and securely.
 
+![image_01.png](images/image_01.png)
+
 ## Description
 
 This repository provides a practical reference for developers to implement biometric authentication in Android applications. It focuses on using the AndroidX Biometrics API according to security best practices to ensure a safe and reliable user experience.
